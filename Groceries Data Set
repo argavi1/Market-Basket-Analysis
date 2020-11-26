@@ -1,0 +1,53 @@
+# Loading the packages
+
+library(arules)
+library(arulesViz)
+library(Matrix)
+library(grid)
+library(dplyr)
+library(RColorBrewer)
+
+# Importing Groceries Data Set and save it as MBA
+
+MBA <- read.csv("Groceries_dataset.csv")
+
+# Checking the structure of Groceries Data Set
+
+str(MBA)
+head(MBA)
+
+# Transforming data set into data transaction type
+
+groceries_trans <- as(split(MBA[,"itemDescription"], MBA[,"Member_number"],), "transactions")
+groceries_trans
+
+# Checking the top 20 item frequency through bar chart
+
+itemFrequencyPlot(groceries_trans, topN=20, type="absolute", col=brewer.pal(8, "Pastel2"),
+                  main="Absolute item Frequency Plot")
+
+# Creating the rules and save it in groceries_rules
+
+groceries_rules <- apriori(groceries_trans, parameter = list(supp=0.001, conf=0.8))
+groceries_rules
+
+# What product that consumers buy after purchased whole milk ?
+
+groceries_rules <- apriori(data=groceries_trans, parameter = list(supp=0.001,conf = 0.08), 
+               appearance = list(lhs="whole milk", default = "rhs"),
+               control = list(verbose = F))
+
+groceries_rules <- sort(groceries_rules, decreasing=TRUE, by="confidence")
+
+inspect(groceries_rules[1:6])
+
+# Visualizig the top 6 rules from groceries data transaction
+
+top6_groceries_rules <- head(groceries_rules, n= 6, by="confidence")
+
+plot(top6_groceries_rules, method = "graph", engine = "htmlwidget")
+
+
+
+                  
+                  
